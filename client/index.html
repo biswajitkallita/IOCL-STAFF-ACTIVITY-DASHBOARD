@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>IOCL | Employee Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header>
+  <img src="Indian_Oil_Logo.svg (1).png" alt="IOCL Logo" class="logo">
+  <h1 class="title">IOCL EMPLOYEE DASHBOARD</h1>
+  <button class="logout-btn" onclick="logout()">Logout</button>
+</header>
+
+  <section class="form-section">
+    <h2>Register New Employee</h2>
+    <form id="employeeForm">
+      <input type="text" placeholder="Employee ID" id="empId" required />
+      <input type="text" placeholder="Name" id="name" required />
+      <input type="text" placeholder="Department" id="department" required />
+      <select id="shiftTime" required>
+        <option value="">Select Shift</option>
+        <option value="Morning">Morning</option>
+        <option value="Afternoon">Afternoon</option>
+        <option value="Night">Night</option>
+      </select>
+      <button type="submit">Register</button>
+    </form>
+  </section>
+
+  <section class="filter-section">
+    <input type="text" id="filterDept" placeholder="Filter by Department" />
+    <select id="filterShift">
+      <option value="">Filter by Shift</option>
+      <option value="Morning">Morning</option>
+      <option value="Afternoon">Afternoon</option>
+      <option value="Night">Night</option>
+    </select>
+  </section>
+
+  <section class="table-section">
+    <h2>Employee List</h2>
+    <table>
+      <thead>
+        <tr><th>ID</th><th>Name</th><th>Department</th><th>Shift</th><th>Actions</th></tr>
+      </thead>
+      <tbody id="employeeTable"></tbody>
+    </table>
+  </section>
+
+  <section class="chart-section">
+    <h2>Employee Analytics</h2>
+    <canvas id="deptChart" width="400" height="200"></canvas>
+    <canvas id="shiftChart" width="400" height="200" style="margin-top: 40px;"></canvas>
+    <canvas id="timelineChart" width="600" height="200" style="margin-top: 40px;"></canvas>
+  </section>
+
+  <script>
+    const API_URL = 'http://localhost:5000/api/employees';
+    let allEmployees = [];
+
+    // ✅ Make logout globally accessible
+    window.logout = function () {
+      localStorage.removeItem('isLoggedIn');
+      window.location.href = 'login.html';
+    };
+
+    document.getElementById('employeeForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const newEmployee = {
+        empId: document.getElementById('empId').value,
+        name: document.getElementById('name').value,
+        department: document.getElementById('department').value,
+        shiftTime: document.getElementById('shiftTime').value,
+      };
+      await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newEmployee),
+      });
+      e.target.reset();
+      fetchEmployees();
+    });
+
+    async function fetchEmployees() {
+      const res = await fetch(API_URL);
+      allEmployees = await res.json();
+      applyFilters();
+      updateCharts(allEmployees);
+    }
+
+    function applyFilters() {
+      const deptFilter = document.getElementById('filterDept').value.toLowerCase();
+      const shiftFilter = document.getElementById('filterShift').value;
+
+      const filtered = allEmployees.filter(emp =>
+        (!deptFilter || emp.department.toLowerCase().includes(deptFilter)) &&
+        (!shiftFilter || emp.shiftTime === shiftFilter)
+      );
+
+      const tableBody = document.getElementById('employeeTable');
+      tableBody.innerHTML = '';
+      filtered.forEach(emp => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${emp.empId}</td>
+          <td>${emp.name}</td>
+          <td>${emp.department}</td>
+          <td>${emp.shiftTime}</td>
+          <td>
+            <button onclick="editEmployee('${emp._id}')">Edit</button>
+            <button onclick="deleteEmployee('${emp._id}')">Delete</button>
+          </td>`;
+        tableBody.appendChild(row);
+      });
+    }
+
+    function updateCharts(data) {
+      const deptCount = {}, shiftCount = {}, timelineCount = {};
+
+      data.forEach(emp => {
+        deptCount[emp.department] = (deptCount[emp.department] || 0) + 1;
+        shiftCount[emp.shiftTime] = (shiftCount[emp.shiftTime] || 0) + 1;
+
+        if (emp.joiningDate) {
+          const date = new Date(emp.joiningDate).toISOString().split('T')[0];
+          timelineCount[date] = (timelineCount[date] || 0) + 1;
+        }
+      });
+
+      const deptCtx = document.getElementById('deptChart').getContext('2d');
+      const shiftCtx = document.getElementById('shiftChart').getContext('2d');
+      const timeCtx = document.getElementById('timelineChart').getContext('2d');
+
+      if (window.deptChartObj) window.deptChartObj.destroy();
+      if (window.shiftChartObj) window.shiftChartObj.destroy();
+      if (window.timelineChartObj) window.timelineChartObj.destroy();
+
+      window.deptChartObj = new Chart(deptCtx, {
+        type: 'bar',
+        data: {
+          labels: Object.keys(deptCount),
+          datasets: [{
+            label: 'Employees per Department',
+            data: Object.values(deptCount),
+            backgroundColor: '#f26522'
+          }]
+        }
+      });
+
+      window.shiftChartObj = new Chart(shiftCtx, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(shiftCount),
+          datasets: [{
+            label: 'Employees per Shift',
+            data: Object.values(shiftCount),
+            backgroundColor: ['#3498db', '#f1c40f', '#e74c3c']
+          }]
+        }
+      });
+
+      const sortedDates = Object.keys(timelineCount).sort();
+      let cumulative = 0;
+      const cumulativeCounts = sortedDates.map(date => {
+        cumulative += timelineCount[date];
+        return cumulative;
+      });
+
+      window.timelineChartObj = new Chart(timeCtx, {
+        type: 'line',
+        data: {
+          labels: sortedDates,
+          datasets: [{
+            label: 'Total Employees Over Time',
+            data: cumulativeCounts,
+            borderColor: '#27ae60',
+            tension: 0.2,
+            fill: true
+          }]
+        }
+      });
+    }
+
+    async function deleteEmployee(id) {
+      await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+      fetchEmployees();
+    }
+
+    async function editEmployee(id) {
+      const emp = allEmployees.find(e => e._id === id);
+      document.getElementById('empId').value = emp.empId;
+      document.getElementById('name').value = emp.name;
+      document.getElementById('department').value = emp.department;
+      document.getElementById('shiftTime').value = emp.shiftTime;
+      await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+    }
+
+    document.getElementById('filterDept').addEventListener('input', applyFilters);
+    document.getElementById('filterShift').addEventListener('change', applyFilters);
+
+    window.onload = fetchEmployees;
+  </script>
+</body>
+</html>

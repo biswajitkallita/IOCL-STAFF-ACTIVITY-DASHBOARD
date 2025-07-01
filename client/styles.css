@@ -1,0 +1,108 @@
+body {
+  font-family: "Segoe UI", sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+}
+header {
+  background-color: #002147;
+  color: white;
+  text-align: center;
+  padding: 20px;
+  border-bottom: 5px solid #f26522;
+}
+header img {
+  height: 120px;
+  float: left;
+  margin: 0 45px;
+}
+.form-section, .filter-section, .table-section {
+  padding: 20px 40px;
+  margin-top: 20px;
+}
+input, select, button {
+  margin: 6px;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+button {
+  background-color: #e74c3c;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+button:hover {
+  background-color: #c0392b;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+}
+th, td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: center;
+}
+th {
+  background-color: #f26522;
+  color: white;
+}
+.login-box {
+  width: 300px;
+  margin: 100px auto;
+  padding: 30px;
+  background: white;
+  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  text-align: center;
+  border-radius: 8px;
+}
+.login-box input {
+  display: block;
+  width: 90%;
+  margin: 10px auto;
+  padding: 10px;
+}
+.chart-section {
+  padding: 40px;
+  background: #fff;
+  margin: 40px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px #ccc;
+  text-align: center;
+}
+canvas {
+  margin-top: 30px;
+}
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 40px 80px;
+  background-color: #2b1c8d;
+  color: white;
+  position: relative;
+}
+
+.logo {
+  width: 110px;
+  height: auto;
+}
+
+.title {
+  flex: 1;
+  text-align: center;
+  font-size: 40px;
+  margin: 0;
+}
+
+.logout-btn {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-weight: bold;
+  border-radius: 4px;
+}   
