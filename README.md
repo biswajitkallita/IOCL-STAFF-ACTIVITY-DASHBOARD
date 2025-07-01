@@ -1,2 +1,2 @@
 # IOCL-STAFF-ACTIVITY-DASHBOARD
-A web-based dashboard to monitor IOCL employee data with real-time charts and filtering options. Designed for admins and managers, it’s built using Node.js, MongoDB, HTML, and CSS.
+The IOCL Dashboard is a web-based application developed to monitor and manage employee data for Indian Oil Corporation Ltd. It provides real-time charts to display the number of active employees and supports interactive features like filtering and data visualization. The dashboard is designed for use by administrators and managers to track employee activity, department-wise records, and shift data efficiently. The project is built using Node.js, MongoDB, HTML, and CSS for a responsive and dynamic experience.
